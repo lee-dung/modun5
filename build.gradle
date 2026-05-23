@@ -1,0 +1,77 @@
+plugins {
+    id 'java'
+    id 'war'
+}
+
+group 'com.example'
+version '1.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    springVersion         = '6.1.6'
+    springSecurityVersion = '6.2.4'
+    thymeleafVersion      = '3.1.2.RELEASE'
+    junitVersion = '5.13.2'
+}
+
+sourceCompatibility = '21'
+targetCompatibility = '21'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+dependencies {
+    compileOnly('jakarta.servlet:jakarta.servlet-api:6.1.0')
+
+    implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
+    implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
+
+    implementation('org.glassfish.jersey.containers:jersey-container-servlet:4.0.0-M2')
+    implementation('org.glassfish.jersey.media:jersey-media-json-jackson:4.0.0-M2')
+    implementation('org.glassfish.jersey.inject:jersey-cdi2-se:4.0.0-M2')
+    implementation('org.jboss.weld.se:weld-se-core:6.0.3.Final')
+
+    implementation "org.springframework:spring-webmvc:${springVersion}"
+    implementation "org.springframework:spring-jdbc:${springVersion}"
+    implementation "org.springframework:spring-tx:${springVersion}"
+
+    implementation "org.springframework.security:spring-security-web:${springSecurityVersion}"
+    implementation "org.springframework.security:spring-security-config:${springSecurityVersion}"
+    implementation "org.springframework.security:spring-security-taglibs:${springSecurityVersion}"
+
+    implementation "org.thymeleaf:thymeleaf-spring6:${thymeleafVersion}"
+    implementation "org.thymeleaf.extras:thymeleaf-extras-springsecurity6:3.1.2.RELEASE"
+
+    implementation 'com.mysql:mysql-connector-j:8.3.0'
+    implementation 'com.zaxxer:HikariCP:5.1.0'
+
+    compileOnly    'org.projectlombok:lombok:1.18.32'
+    annotationProcessor 'org.projectlombok:lombok:1.18.32'
+
+    implementation 'at.favre.lib:bcrypt:0.10.2'
+
+    testImplementation 'org.springframework:spring-test:6.1.6'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testImplementation 'org.mockito:mockito-core:5.11.0'
+    testImplementation 'com.h2database:h2:2.2.224'
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+}
+
+war {
+    archiveFileName = 'expense-app.war'
+}
+
+test {
+    useJUnitPlatform()
+}

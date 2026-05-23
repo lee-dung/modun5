@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle != null ? pageTitle + ' — Expense App' : 'Expense App'}">Expense App</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/static/css/main.css}">
+    <th:block th:fragment="extraHead"></th:block>
+</head>
+<body>
+
+<div class="app-layout">
+    <aside class="app-sidebar">
+        <a th:href="@{/dashboard}" class="sidebar-logo">
+            <span class="sidebar-logo-icon">💰</span>
+            Expense
+        </a>
+
+        <span class="sidebar-label">Tổng quan</span>
+        <ul class="sidebar-nav">
+            <li>
+                <a th:href="@{/dashboard}"
+                   th:classappend="${currentPage == 'dashboard'} ? 'active' : ''">
+                    <i class="bi bi-grid-1x2"></i> Dashboard
+                </a>
+            </li>
+        </ul>
+
+        <span class="sidebar-label">Giao dịch</span>
+        <ul class="sidebar-nav">
+            <li>
+                <a th:href="@{/transactions}"
+                   th:classappend="${currentPage == 'transactions'} ? 'active' : ''">
+                    <i class="bi bi-arrow-left-right"></i> Chi tiêu
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/transactions/stats}"
+                   th:classappend="${currentPage == 'stats'} ? 'active' : ''">
+                    <i class="bi bi-bar-chart-line"></i> Thống kê
+                </a>
+            </li>
+        </ul>
+
+        <span class="sidebar-label">Quản lý</span>
+        <ul class="sidebar-nav">
+            <li>
+                <a th:href="@{/wallets}"
+                   th:classappend="${currentPage == 'wallets'} ? 'active' : ''">
+                    <i class="bi bi-wallet2"></i> Ví tiền
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/categories}"
+                   th:classappend="${currentPage == 'categories'} ? 'active' : ''">
+                    <i class="bi bi-tag"></i> Danh mục
+                </a>
+            </li>
+            <li>
+                <a th:href="@{/budgets}"
+                   th:classappend="${currentPage == 'budgets'} ? 'active' : ''">
+                    <i class="bi bi-pie-chart"></i> Ngân sách
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-bottom">
+            <div style="border-top: 1px solid rgba(255,255,255,.1); padding-top: 1rem; margin-top: 1rem;">
+                <div style="display:flex; align-items:center; gap:.7rem; padding: .5rem .75rem; margin-bottom:.5rem;">
+                    <div style="width:34px;height:34px;border-radius:50%;background:rgba(0,200,150,.2);border:1.5px solid rgba(0,200,150,.4);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:600;color:#00C896;"
+                         sec:authentication="name"
+                         th:text="${#strings.toUpperCase(#strings.substring(#authentication.name, 0, 1))}">U</div>
+                    <div style="flex:1;overflow:hidden;">
+                        <div style="font-size:.85rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" sec:authentication="name">username</div>
+                        <div style="font-size:.75rem;color:rgba(255,255,255,.45);">Tài khoản</div>
+                    </div>
+                </div>
+
+                <ul class="sidebar-nav">
+                    <li>
+                        <a th:href="@{/profile}">
+                            <i class="bi bi-person"></i> Hồ sơ
+                        </a>
+                    </li>
+                    <li>
+                        <a th:href="@{/logout}"
+                           onclick="return confirm('Bạn có chắc muốn đăng xuất?')"
+                           style="color: rgba(231,76,60,.8);">
+                            <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </aside>
+
+    <main class="app-main">
+        <div th:if="${successMsg}" class="alert-app alert-success" style="margin-bottom:1.5rem;">
+            <i class="bi bi-check-circle alert-icon"></i>
+            <span th:text="${successMsg}"></span>
+        </div>
+        <div th:if="${errorMsg}" class="alert-app alert-error" style="margin-bottom:1.5rem;">
+            <i class="bi bi-exclamation-circle alert-icon"></i>
+            <span th:text="${errorMsg}"></span>
+        </div>
+
+        <th:block th:fragment="content"></th:block>
+    </main>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/static/js/app.js}"></script>
+
+<th:block th:fragment="extraScript"></th:block>
+
+</body>
+</html>
