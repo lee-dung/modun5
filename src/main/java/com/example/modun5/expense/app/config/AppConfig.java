@@ -15,7 +15,11 @@ import javax.sql.DataSource;
 @Configuration
 @PropertySource("classpath:application.properties")
 @EnableTransactionManagement
-@ComponentScan(basePackages = "com.example.modun5.expense")
+@ComponentScan(basePackages = "com.example.modun5.expense.app",
+        excludeFilters = @ComponentScan.Filter(
+                type = FilterType.REGEX,
+                pattern = "com\\.example\\.modun5\\.expense\\.app\\.controller\\..*"
+        ))
 public class AppConfig {
     @Value("${db.url}")      private String dbUrl;
     @Value("${db.username}") private String dbUsername;

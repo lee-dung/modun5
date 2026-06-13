@@ -1,3 +1,4 @@
+
 package com.example.modun5.expense.app.dto;
 
 import jakarta.validation.constraints.*;
@@ -20,3 +21,5 @@ public class WalletDTO {
     private String description;
     private boolean isDefault = false;
 }
+
+

@@ -30,7 +30,7 @@ public class UserRepositoryImpl implements UserRepository{
             .avatarUrl(rs.getString("avatar_url"))
             .enabled(rs.getBoolean("enabled"))
             .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
-            .createdAt(rs.getTimestamp("updated_at").toLocalDateTime())
+            .updatedAt(rs.getTimestamp("updated_at").toLocalDateTime())
             .build();
 
     @Override
@@ -42,9 +42,10 @@ public class UserRepositoryImpl implements UserRepository{
 
     @Override
     public Optional<User> findByUsername(String username) {
-        return Optional.empty();
+        String sql = "SELECT * FROM users WHERE username = ?";
+        return jdbc.query(sql, userRowMapper, username)
+                .stream().findFirst();
     }
-
     @Override
     public Optional<User> findByEmail(String email) {
         String sql = "SELECT * FROM users WHERE email = ?";

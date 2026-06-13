@@ -10,7 +10,7 @@ import org.thymeleaf.templatemode.TemplateMode;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = "com.example.modun5.expense")
+@ComponentScan(basePackages = "com.example.modun5.expense.app.controller")
 public class WebConfig implements WebMvcConfigurer {
 
     @Bean

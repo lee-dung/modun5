@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title th:text="${isEdit} ? 'Sửa ví — Expense App' : 'Thêm ví — Expense App'">Ví tiền</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/static/css/main.css}">
+    <link rel="stylesheet" th:href="@{/static/css/wallets.css}">
+</head>
+<body>
+<div class="app-layout">
+
+    <!-- Sidebar -->
+    <aside class="app-sidebar">
+        <a th:href="@{/dashboard}" class="sidebar-logo">
+            <span class="sidebar-logo-icon">💰</span> Expense App
+        </a>
+        <span class="sidebar-label">Tổng quan</span>
+        <ul class="sidebar-nav"><li><a th:href="@{/dashboard}"><i class="bi bi-grid-1x2"></i> Dashboard</a></li></ul>
+        <span class="sidebar-label">Giao dịch</span>
+        <ul class="sidebar-nav">
+            <li><a th:href="@{/transactions}"><i class="bi bi-arrow-left-right"></i> Chi tiêu</a></li>
+            <li><a th:href="@{/transactions/stats}"><i class="bi bi-bar-chart-line"></i> Thống kê</a></li>
+        </ul>
+        <span class="sidebar-label">Quản lý</span>
+        <ul class="sidebar-nav">
+            <li><a th:href="@{/wallets}" class="active"><i class="bi bi-wallet2"></i> Ví tiền</a></li>
+            <li><a th:href="@{/categories}"><i class="bi bi-tag"></i> Danh mục</a></li>
+            <li><a th:href="@{/budgets}"><i class="bi bi-pie-chart"></i> Ngân sách</a></li>
+        </ul>
+        <div class="sidebar-bottom">
+            <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:1rem;margin-top:1rem;">
+                <ul class="sidebar-nav">
+                    <li>
+                        <form th:action="@{/logout}" method="post" style="margin:0">
+                            <button type="submit" style="all:unset;width:100%;cursor:pointer;">
+                <span style="display:flex;align-items:center;gap:.7rem;padding:.6rem .75rem;border-radius:6px;font-size:.875rem;color:rgba(231,76,60,.8);">
+                  <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                </span>
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="app-main">
+
+        <!-- Breadcrumb -->
+        <div class="breadcrumb-wrap">
+            <a th:href="@{/wallets}" class="breadcrumb-link">
+                <i class="bi bi-wallet2"></i> Ví tiền
+            </a>
+            <i class="bi bi-chevron-right breadcrumb-sep"></i>
+            <span th:text="${isEdit} ? 'Chỉnh sửa ví' : 'Thêm ví mới'">Thêm ví mới</span>
+        </div>
+
+        <div class="form-page-layout">
+
+            <!-- Form card -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="form-card-icon">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <div>
+                        <h2 class="form-card-title" th:text="${isEdit} ? 'Chỉnh sửa ví' : 'Tạo ví mới'">Tạo ví mới</h2>
+                        <p class="form-card-sub">Điền thông tin ví tiền của bạn</p>
+                    </div>
+                </div>
+
+                <!-- Alert lỗi -->
+                <div th:if="${errorMsg}" class="alert-app alert-error" style="margin-bottom:1.25rem;">
+                    <i class="bi bi-exclamation-circle alert-icon"></i>
+                    <span th:text="${errorMsg}"></span>
+                </div>
+
+                <!--
+                  isEdit = true  → POST /wallets/{id}/edit
+                  isEdit = false → POST /wallets/add
+                  th:action tự thêm CSRF token
+                -->
+                <form th:action="${isEdit} ? @{'/wallets/' + ${walletDTO.id} + '/edit'} : @{/wallets/add}"
+                      method="post"
+                      th:object="${walletDTO}"
+                      novalidate>
+
+                    <!-- Tên ví -->
+                    <div class="form-group">
+                        <label class="form-label" for="name">Tên ví <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-pencil input-icon"></i>
+                            <input type="text" class="form-control"
+                                   th:field="*{name}"
+                                   th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
+                                   id="name" placeholder="vd: Tiền mặt, Ngân hàng VCB...">
+                        </div>
+                        <div class="field-error" th:if="${#fields.hasErrors('name')}">
+                            <i class="bi bi-exclamation-circle"></i>
+                            <span th:errors="*{name}"></span>
+                        </div>
+                    </div>
+
+                    <!-- Số dư ban đầu (chỉ hiện khi tạo mới) -->
+                    <div class="form-group" th:unless="${isEdit}">
+                        <label class="form-label" for="balance">
+                            Số dư ban đầu <span class="required">*</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-cash-coin input-icon"></i>
+                            <input type="number" class="form-control"
+                                   th:field="*{balance}"
+                                   th:classappend="${#fields.hasErrors('balance')} ? 'is-invalid'"
+                                   id="balance" placeholder="0" min="0" step="1000">
+                            <span class="input-suffix">₫</span>
+                        </div>
+                        <div class="field-error" th:if="${#fields.hasErrors('balance')}">
+                            <i class="bi bi-exclamation-circle"></i>
+                            <span th:errors="*{balance}"></span>
+                        </div>
+                        <div class="field-hint">Số tiền hiện có trong ví. Có thể thay đổi sau qua giao dịch.</div>
+                    </div>
+
+                    <!-- Đơn vị tiền tệ -->
+                    <div class="form-group">
+                        <label class="form-label" for="currency">Đơn vị tiền tệ <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-currency-exchange input-icon"></i>
+                            <select class="form-control form-select"
+                                    th:field="*{currency}"
+                                    id="currency">
+                                <option th:each="cur : ${currencies}"
+                                        th:value="${cur[0]}"
+                                        th:text="${cur[1]}">VND</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Icon ví -->
+                    <div class="form-group">
+                        <label class="form-label">Biểu tượng ví</label>
+                        <div class="icon-picker">
+                            <label th:each="icon : ${icons}" class="icon-option">
+                                <input type="radio" name="icon"
+                                       th:value="${icon[0]}"
+                                       th:checked="${walletDTO.icon == icon[0]}">
+                                <span class="icon-btn" th:title="${icon[1]}">
+                  <i class="bi" th:classappend="'bi-' + ${icon[0]}"></i>
+                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Mô tả -->
+                    <div class="form-group">
+                        <label class="form-label" for="description">Mô tả <span class="optional">(tuỳ chọn)</span></label>
+                        <div class="input-wrapper">
+                            <i class="bi bi-chat-left-text input-icon" style="top:14px;transform:none;"></i>
+                            <textarea class="form-control form-textarea"
+                                      th:field="*{description}"
+                                      id="description"
+                                      rows="2"
+                                      placeholder="vd: Ví dùng cho chi tiêu hàng ngày..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Đặt làm mặc định -->
+                    <div class="check-group" style="margin-bottom:1.5rem;">
+                        <input type="checkbox" id="isDefault" th:field="*{default}">
+                        <label for="isDefault">
+                            <i class="bi bi-star" style="color:var(--warning);"></i>
+                            Đặt làm ví mặc định
+                        </label>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="form-actions">
+                        <a th:href="@{/wallets}" class="btn-cancel">
+                            <i class="bi bi-x-lg"></i> Huỷ bỏ
+                        </a>
+                        <button type="submit" class="btn-submit">
+                            <span class="spinner"></span>
+                            <span class="btn-text">
+                <i class="bi" th:classappend="${isEdit} ? 'bi-check-lg' : 'bi-plus-lg'"></i>
+                <span th:text="${isEdit} ? 'Lưu thay đổi' : 'Tạo ví'"></span>
+              </span>
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+            <!-- Preview card bên phải -->
+            <div class="preview-col">
+                <div class="preview-label">Xem trước</div>
+                <div class="wallet-preview-card" id="previewCard">
+                    <div class="wallet-header">
+                        <div class="wallet-icon-wrap" id="previewIconWrap">
+                            <i class="bi bi-wallet2" id="previewIcon"></i>
+                        </div>
+                        <div>
+                            <div class="wallet-name" id="previewName">Tên ví</div>
+                            <div class="wallet-currency" id="previewCurrency">VND</div>
+                        </div>
+                    </div>
+                    <div class="wallet-balance" id="previewBalance">0 ₫</div>
+                    <div class="wallet-desc" id="previewDesc" style="display:none"></div>
+                </div>
+                <p class="preview-note">Preview cập nhật realtime khi bạn điền thông tin</p>
+            </div>
+
+        </div><!-- /form-page-layout -->
+    </main>
+</div>
+
+<script th:src="@{/static/js/app.js}"></script>
+<script th:src="@{/static/js/wallets.js}"></script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+
 package com.example.modun5.expense.app.repository;
 
 import com.example.modun5.expense.app.model.Wallet;
@@ -16,3 +17,4 @@ public interface WalletRepository {
     int countByUserId(Long userId);
     boolean existsByNameAndUserId(String name, Long userId, Long excludeId);
 }
+
