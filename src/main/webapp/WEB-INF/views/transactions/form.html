@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="vi">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title th:text="${isEdit} ? 'Sửa giao dịch — Expense App' : 'Thêm giao dịch — Expense App'">Giao dịch</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/static/css/main.css}">
+    <link rel="stylesheet" th:href="@{/static/css/transactions.css}">
+</head>
+<body>
+<div class="app-layout">
+
+    <!-- Sidebar -->
+    <aside class="app-sidebar">
+        <a th:href="@{/dashboard}" class="sidebar-logo">
+            <span class="sidebar-logo-icon">💰</span> Expense App
+        </a>
+        <span class="sidebar-label">Tổng quan</span>
+        <ul class="sidebar-nav">
+            <li><a th:href="@{/dashboard}"><i class="bi bi-grid-1x2"></i> Dashboard</a></li>
+        </ul>
+        <span class="sidebar-label">Giao dịch</span>
+        <ul class="sidebar-nav">
+            <li><a th:href="@{/transactions}" class="active"><i class="bi bi-arrow-left-right"></i> Chi tiêu</a></li>
+        </ul>
+        <span class="sidebar-label">Quản lý</span>
+        <ul class="sidebar-nav">
+            <li><a th:href="@{/wallets}"><i class="bi bi-wallet2"></i> Ví tiền</a></li>
+            <li><a th:href="@{/categories}"><i class="bi bi-tag"></i> Danh mục</a></li>
+        </ul>
+        <div class="sidebar-bottom">
+            <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:1rem;margin-top:1rem;">
+                <ul class="sidebar-nav">
+                    <li>
+                        <form th:action="@{/logout}" method="post" style="margin:0">
+                            <button type="submit" style="all:unset;width:100%;cursor:pointer;">
+                <span style="display:flex;align-items:center;gap:.7rem;padding:.6rem .75rem;border-radius:6px;font-size:.875rem;color:rgba(231,76,60,.8);">
+                  <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                </span>
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="app-main">
+
+        <!-- Breadcrumb -->
+        <div class="breadcrumb-wrap">
+            <a th:href="@{/transactions}" class="breadcrumb-link">
+                <i class="bi bi-arrow-left-right"></i> Chi tiêu
+            </a>
+            <i class="bi bi-chevron-right" style="font-size:.75rem;color:var(--s400);"></i>
+            <span th:text="${isEdit} ? 'Chỉnh sửa giao dịch' : 'Thêm giao dịch mới'"></span>
+        </div>
+
+        <div class="form-card">
+
+            <!-- Header -->
+            <div class="form-card-header">
+                <div class="form-card-icon">
+                    <i class="bi bi-arrow-left-right"></i>
+                </div>
+                <div>
+                    <div class="form-card-title"
+                         th:text="${isEdit} ? 'Chỉnh sửa giao dịch' : 'Thêm giao dịch mới'"></div>
+                    <div class="form-card-sub">Điền thông tin giao dịch của bạn</div>
+                </div>
+            </div>
+
+            <!-- Alert lỗi -->
+            <div th:if="${errorMsg}" class="alert-app alert-error" style="margin-bottom:1.25rem;">
+                <i class="bi bi-exclamation-circle alert-icon"></i>
+                <span th:text="${errorMsg}"></span>
+            </div>
+
+            <form th:action="${isEdit} ? '/transactions/' + ${transactionDTO.id} + '/edit' : '/transactions/add'"
+                  method="post"
+                  th:object="${transactionDTO}"
+                  novalidate>
+
+                <!-- Loại giao dịch -->
+                <div class="form-group">
+                    <label class="form-label">Loại giao dịch <span class="required">*</span></label>
+                    <div class="type-selector">
+                        <label class="type-option">
+                            <input type="radio" name="type" value="EXPENSE"
+                                   th:checked="${transactionDTO.type == 'EXPENSE' or transactionDTO.type == null}">
+                            <span class="type-btn expense">
+                <i class="bi bi-arrow-down-circle"></i> Chi tiêu
+              </span>
+                        </label>
+                        <label class="type-option">
+                            <input type="radio" name="type" value="INCOME"
+                                   th:checked="${transactionDTO.type == 'INCOME'}">
+                            <span class="type-btn income">
+                <i class="bi bi-arrow-up-circle"></i> Thu nhập
+              </span>
+                        </label>
+                    </div>
+                    <div class="field-error" th:if="${#fields.hasErrors('type')}">
+                        <i class="bi bi-exclamation-circle"></i><span th:errors="*{type}"></span>
+                    </div>
+                </div>
+
+                <!-- Số tiền -->
+                <div class="form-group">
+                    <label class="form-label" for="amount">
+                        Số tiền <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <i class="bi bi-cash-coin input-icon"></i>
+                        <input type="number" class="form-control"
+                               th:field="*{amount}"
+                               th:classappend="${#fields.hasErrors('amount')} ? 'is-invalid'"
+                               id="amount" placeholder="0" min="1" step="1000">
+                        <span style="position:absolute;right:.9rem;top:50%;transform:translateY(-50%);font-size:.85rem;font-weight:600;color:var(--s400);">₫</span>
+                    </div>
+                    <!-- Preview số tiền -->
+                    <div style="font-size:.82rem;margin-top:.35rem;font-weight:600;color:var(--s400);"
+                         id="amountPreview">0 ₫</div>
+                    <div class="field-error" th:if="${#fields.hasErrors('amount')}">
+                        <i class="bi bi-exclamation-circle"></i><span th:errors="*{amount}"></span>
+                    </div>
+                </div>
+
+                <!-- Ví tiền -->
+                <div class="form-group">
+                    <label class="form-label" for="walletId">
+                        Ví tiền <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <i class="bi bi-wallet2 input-icon"></i>
+                        <select class="form-control form-select"
+                                th:field="*{walletId}"
+                                th:classappend="${#fields.hasErrors('walletId')} ? 'is-invalid'"
+                                id="walletId">
+                            <option value="">-- Chọn ví --</option>
+                            <option th:each="w : ${wallets}"
+                                    th:value="${w.id}"
+                                    th:text="${w.name + ' (' + #numbers.formatDecimal(w.balance,0,'COMMA',0,'POINT') + ' ₫)'}"
+                                    th:selected="${transactionDTO.walletId == w.id}">Ví</option>
+                        </select>
+                    </div>
+                    <div class="field-error" th:if="${#fields.hasErrors('walletId')}">
+                        <i class="bi bi-exclamation-circle"></i><span th:errors="*{walletId}"></span>
+                    </div>
+                </div>
+
+                <!-- Danh mục -->
+                <div class="form-group">
+                    <label class="form-label" for="categoryId">
+                        Danh mục <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <i class="bi bi-tag input-icon"></i>
+                        <select class="form-control form-select"
+                                th:field="*{categoryId}"
+                                th:classappend="${#fields.hasErrors('categoryId')} ? 'is-invalid'"
+                                id="categoryId">
+                            <option value="">-- Chọn danh mục --</option>
+                            <option th:each="c : ${categories}"
+                                    th:value="${c.id}"
+                                    th:text="${c.name}"
+                                    th:selected="${transactionDTO.categoryId == c.id}">Danh mục</option>
+                        </select>
+                    </div>
+                    <div class="field-error" th:if="${#fields.hasErrors('categoryId')}">
+                        <i class="bi bi-exclamation-circle"></i><span th:errors="*{categoryId}"></span>
+                    </div>
+                </div>
+
+                <!-- Ngày giao dịch -->
+                <div class="form-group">
+                    <label class="form-label" for="transactionDate">
+                        Ngày giao dịch <span class="required">*</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <i class="bi bi-calendar3 input-icon"></i>
+                        <input type="date" class="form-control"
+                               th:field="*{transactionDate}"
+                               th:classappend="${#fields.hasErrors('transactionDate')} ? 'is-invalid'"
+                               id="transactionDate">
+                    </div>
+                    <div class="field-error" th:if="${#fields.hasErrors('transactionDate')}">
+                        <i class="bi bi-exclamation-circle"></i><span th:errors="*{transactionDate}"></span>
+                    </div>
+                </div>
+
+                <!-- Ghi chú -->
+                <div class="form-group">
+                    <label class="form-label" for="note">
+                        Ghi chú <span style="color:var(--s400);font-size:.78rem;font-weight:400;">(tuỳ chọn)</span>
+                    </label>
+                    <div class="input-wrapper">
+                        <i class="bi bi-chat-left-text input-icon" style="top:14px;transform:none;"></i>
+                        <textarea class="form-control form-textarea"
+                                  th:field="*{note}"
+                                  id="note" rows="2"
+                                  placeholder="vd: Ăn trưa với bạn bè, mua xăng..."></textarea>
+                    </div>
+                    <div class="field-error" th:if="${#fields.hasErrors('note')}">
+                        <i class="bi bi-exclamation-circle"></i><span th:errors="*{note}"></span>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="form-actions">
+                    <a th:href="@{/transactions}" class="btn-cancel">
+                        <i class="bi bi-x-lg"></i> Huỷ bỏ
+                    </a>
+                    <button type="submit" class="btn-submit" style="flex:2;margin-top:0;">
+                        <span class="spinner"></span>
+                        <span class="btn-text">
+              <i class="bi" th:classappend="${isEdit} ? 'bi-check-lg' : 'bi-plus-lg'"></i>
+              <span th:text="${isEdit} ? 'Lưu thay đổi' : 'Thêm giao dịch'"></span>
+            </span>
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+    </main>
+</div>
+
+<script th:src="@{/static/js/app.js}"></script>
+<script th:src="@{/static/js/transactions.js}"></script>
+</body>
+</html>

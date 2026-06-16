@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="vi">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Chi tiêu — Expense App</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/static/css/main.css}">
+    <link rel="stylesheet" th:href="@{/static/css/transactions.css}">
+</head>
+<body>
+<div class="app-layout">
+
+    <!-- Sidebar -->
+    <aside class="app-sidebar">
+        <a th:href="@{/dashboard}" class="sidebar-logo">
+            <span class="sidebar-logo-icon">💰</span> Expense App
+        </a>
+        <span class="sidebar-label">Tổng quan</span>
+        <ul class="sidebar-nav">
+            <li><a th:href="@{/dashboard}"><i class="bi bi-grid-1x2"></i> Dashboard</a></li>
+        </ul>
+        <span class="sidebar-label">Giao dịch</span>
+        <ul class="sidebar-nav">
+            <li><a th:href="@{/transactions}" class="active"><i class="bi bi-arrow-left-right"></i> Chi tiêu</a></li>
+        </ul>
+        <span class="sidebar-label">Quản lý</span>
+        <ul class="sidebar-nav">
+            <li><a th:href="@{/wallets}"><i class="bi bi-wallet2"></i> Ví tiền</a></li>
+            <li><a th:href="@{/categories}"><i class="bi bi-tag"></i> Danh mục</a></li>
+        </ul>
+        <div class="sidebar-bottom">
+            <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:1rem;margin-top:1rem;">
+                <div style="display:flex;align-items:center;gap:.7rem;padding:.5rem .75rem;margin-bottom:.5rem;">
+                    <div style="width:34px;height:34px;border-radius:50%;background:rgba(0,200,150,.2);border:1.5px solid rgba(0,200,150,.4);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:600;color:#00C896;">
+            <span sec:authentication="name"
+                  th:text="${#strings.toUpperCase(#strings.substring(#authentication.name,0,1))}">U</span>
+                    </div>
+                    <div>
+                        <div style="font-size:.875rem;font-weight:600;color:#fff;" sec:authentication="name">username</div>
+                        <div style="font-size:.75rem;color:rgba(255,255,255,.45);">Tài khoản</div>
+                    </div>
+                </div>
+                <ul class="sidebar-nav">
+                    <li>
+                        <form th:action="@{/logout}" method="post" style="margin:0">
+                            <button type="submit" style="all:unset;width:100%;cursor:pointer;">
+                <span style="display:flex;align-items:center;gap:.7rem;padding:.6rem .75rem;border-radius:6px;font-size:.875rem;color:rgba(231,76,60,.8);">
+                  <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                </span>
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="app-main">
+
+        <!-- Flash messages -->
+        <div th:if="${successMsg}" class="alert-app alert-success" style="margin-bottom:1.25rem;">
+            <i class="bi bi-check-circle alert-icon"></i><span th:text="${successMsg}"></span>
+        </div>
+        <div th:if="${errorMsg}" class="alert-app alert-error" style="margin-bottom:1.25rem;">
+            <i class="bi bi-exclamation-circle alert-icon"></i><span th:text="${errorMsg}"></span>
+        </div>
+
+        <!-- Page header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Chi tiêu</h1>
+                <p class="page-subtitle"
+                   th:text="${totalCount} + ' giao dịch'">0 giao dịch</p>
+            </div>
+            <a th:href="@{/transactions/add}" class="btn-txn-add">
+                <i class="bi bi-plus-lg"></i> Thêm giao dịch
+            </a>
+        </div>
+
+        <!-- Filter bar -->
+        <form th:action="@{/transactions}" method="get" class="filter-bar">
+            <select name="type" class="filter-select">
+                <option value="">Tất cả loại</option>
+                <option value="EXPENSE" th:selected="${filterType == 'EXPENSE'}">💸 Chi tiêu</option>
+                <option value="INCOME"  th:selected="${filterType == 'INCOME'}">💰 Thu nhập</option>
+            </select>
+
+            <select name="walletId" class="filter-select">
+                <option value="">Tất cả ví</option>
+                <option th:each="w : ${wallets}"
+                        th:value="${w.id}"
+                        th:text="${w.name}"
+                        th:selected="${filterWalletId != null and filterWalletId == w.id}">Ví</option>
+            </select>
+
+            <select name="categoryId" class="filter-select">
+                <option value="">Tất cả danh mục</option>
+                <option th:each="c : ${categories}"
+                        th:value="${c.id}"
+                        th:text="${c.name}"
+                        th:selected="${filterCategoryId != null and filterCategoryId == c.id}">Danh mục</option>
+            </select>
+
+            <input type="date" name="from" class="filter-input"
+                   th:value="${filterFrom}" placeholder="Từ ngày">
+            <input type="date" name="to" class="filter-input"
+                   th:value="${filterTo}" placeholder="Đến ngày">
+
+            <button type="submit" class="btn-filter">
+                <i class="bi bi-funnel"></i> Lọc
+            </button>
+            <a th:href="@{/transactions}" class="btn-filter-clear">Xoá lọc</a>
+        </form>
+
+        <!-- Empty state -->
+        <div th:if="${transactions.isEmpty()}" class="empty-state">
+            <div class="empty-icon">💸</div>
+            <h3>Chưa có giao dịch nào</h3>
+            <p>Thêm giao dịch đầu tiên để bắt đầu theo dõi chi tiêu</p>
+            <a th:href="@{/transactions/add}" class="btn-txn-add"
+               style="margin-top:1.25rem;display:inline-flex;">
+                <i class="bi bi-plus-lg"></i> Thêm giao dịch
+            </a>
+        </div>
+
+        <!-- Transaction list -->
+        <div th:unless="${transactions.isEmpty()}" class="txn-list">
+            <div th:each="txn,stat : ${transactions}"
+                 class="txn-item"
+                 th:style="'--delay:' + ${stat.index * 40} + 'ms'">
+
+                <!-- Icon danh mục -->
+                <div class="txn-cat-icon"
+                     th:style="'background:' + (${txn.categoryColor} ?: '#6c757d') + '20;border-color:' + (${txn.categoryColor} ?: '#6c757d') + '40'">
+                    <i class="bi"
+                       th:classappend="'bi-' + (${txn.categoryIcon} ?: 'tag')"
+                       th:style="'color:' + (${txn.categoryColor} ?: '#6c757d')"></i>
+                </div>
+
+                <!-- Thông tin -->
+                <div class="txn-info">
+                    <div class="txn-category" th:text="${txn.categoryName ?: 'Không rõ'}"></div>
+                    <div class="txn-meta">
+            <span class="txn-wallet">
+              <i class="bi bi-wallet2"></i>
+              <span th:text="${txn.walletName}"></span>
+            </span>
+                        <span th:if="${txn.note != null and !#strings.isEmpty(txn.note)}"
+                              class="txn-note" th:text="${txn.note}"></span>
+                    </div>
+                </div>
+
+                <!-- Ngày -->
+                <div class="txn-date"
+                     th:text="${#temporals.format(txn.transactionDate, 'dd/MM/yyyy')}"></div>
+
+                <!-- Số tiền -->
+                <div class="txn-amount"
+                     th:classappend="${txn.type.name() == 'EXPENSE'} ? ' expense' : ' income'">
+                    <span th:text="${txn.type.name() == 'EXPENSE'} ? '−' : '+'"></span>
+                    <span th:text="${#numbers.formatDecimal(txn.amount, 0, 'COMMA', 0, 'POINT') + ' ₫'}"></span>
+                </div>
+
+                <!-- Actions -->
+                <div class="txn-actions">
+                    <a th:href="@{'/transactions/' + ${txn.id} + '/edit'}" class="btn-txn-edit"
+                       title="Sửa">
+                        <i class="bi bi-pencil-square"></i>
+                    </a>
+                    <button type="button" class="btn-txn-delete"
+                            th:attr="data-id=${txn.id},data-amount=${#numbers.formatDecimal(txn.amount,0,'COMMA',0,'POINT') + ' ₫'}"
+                            onclick="openDeleteModal(this)" title="Xoá">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Phân trang -->
+        <div th:if="${totalPages > 1}" class="pagination">
+            <a th:href="@{/transactions(page=${currentPage - 1}, size=${size})}"
+               th:classappend="${currentPage == 0} ? ' disabled'"
+               class="page-btn">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+            <a th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+               th:href="@{/transactions(page=${i}, size=${size})}"
+               th:text="${i + 1}"
+               th:classappend="${i == currentPage} ? ' active'"
+               class="page-btn"></a>
+            <a th:href="@{/transactions(page=${currentPage + 1}, size=${size})}"
+               th:classappend="${currentPage == totalPages - 1} ? ' disabled'"
+               class="page-btn">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </div>
+
+    </main>
+</div>
+
+<!-- Modal xác nhận xoá -->
+<div class="modal-backdrop" id="deleteModal" onclick="closeModal(event)">
+    <div class="modal-box">
+        <div style="font-size:2.5rem;margin-bottom:.75rem;">🗑️</div>
+        <h3 class="modal-title">Xoá giao dịch?</h3>
+        <p class="modal-desc">
+            Giao dịch <strong id="deleteAmount" style="color:var(--danger)"></strong>
+            sẽ bị xoá và số dư ví sẽ được <strong>hoàn lại tự động</strong>.
+            Hành động này <strong>không thể hoàn tác</strong>.
+        </p>
+        <div class="modal-actions">
+            <button class="btn-modal-cancel" onclick="closeModal()">Huỷ bỏ</button>
+            <form id="deleteForm" method="post" style="margin:0;flex:1;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button type="submit" class="btn-modal-confirm" style="width:100%;">
+                    <i class="bi bi-trash3"></i> Xác nhận xoá
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/static/js/app.js}"></script>
+<script th:src="@{/static/js/transactions.js}"></script>
+</body>
+</html>

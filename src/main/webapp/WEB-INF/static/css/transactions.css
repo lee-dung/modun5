@@ -1,0 +1,242 @@
+/* ============================================================
+   TRANSACTIONS — Styles
+   ============================================================ */
+
+/* ── Button thêm giao dịch ──────────────────────────────────── */
+.btn-txn-add {
+    display: inline-flex; align-items: center; gap: .5rem;
+    height: 44px; padding: 0 1.25rem;
+    background: var(--navy); color: #fff;
+    border: none; border-radius: var(--radius-md);
+    font-size: .9rem; font-weight: 600;
+    text-decoration: none; cursor: pointer; transition: var(--transition);
+}
+.btn-txn-add:hover { background: var(--navy-l); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(27,43,75,.25); color: #fff; }
+
+/* ── Filter bar ─────────────────────────────────────────────── */
+.filter-bar {
+    display: flex; flex-wrap: wrap; gap: .6rem;
+    background: #fff; border: 1px solid var(--s200);
+    border-radius: var(--radius-lg); padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+}
+.filter-select, .filter-input {
+    height: 38px; padding: 0 .85rem;
+    font-family: var(--font-body); font-size: .85rem; color: var(--s900);
+    background: var(--s50); border: 1.5px solid var(--s200);
+    border-radius: var(--radius-sm); outline: none; transition: var(--transition);
+}
+.filter-select { min-width: 130px; cursor: pointer; }
+.filter-input  { min-width: 130px; }
+.filter-select:focus, .filter-input:focus { border-color: var(--mint); background: #fff; }
+.btn-filter {
+    height: 38px; padding: 0 1rem;
+    background: var(--navy); color: #fff; border: none;
+    border-radius: var(--radius-sm); font-size: .85rem; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: .4rem;
+    transition: var(--transition);
+}
+.btn-filter:hover { background: var(--navy-l); }
+.btn-filter-clear {
+    height: 38px; padding: 0 .85rem;
+    background: var(--s100); color: var(--s600);
+    border: 1.5px solid var(--s200); border-radius: var(--radius-sm);
+    font-size: .85rem; text-decoration: none;
+    display: flex; align-items: center; transition: var(--transition);
+}
+.btn-filter-clear:hover { background: var(--s200); color: var(--s900); }
+
+/* ── Empty state ────────────────────────────────────────────── */
+.empty-state {
+    text-align: center; padding: 4rem 2rem;
+    background: #fff; border-radius: var(--radius-lg);
+    border: 1.5px dashed var(--s200);
+}
+.empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+.empty-state h3 { font-family: var(--font-brand); font-size: 1.4rem; color: var(--navy); margin-bottom: .5rem; }
+.empty-state p  { color: var(--s600); font-size: .9rem; }
+
+/* ── Transaction list ───────────────────────────────────────── */
+.txn-list {
+    background: #fff; border-radius: var(--radius-lg);
+    border: 1px solid var(--s200); overflow: hidden;
+}
+
+.txn-item {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--s100);
+    transition: var(--transition);
+    animation: fadeSlideIn .3s ease both;
+    animation-delay: var(--delay, 0ms);
+}
+@keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.txn-item:last-child { border-bottom: none; }
+.txn-item:hover { background: var(--s50); }
+
+/* Icon danh mục */
+.txn-cat-icon {
+    width: 42px; height: 42px; flex-shrink: 0;
+    border-radius: var(--radius-md);
+    border: 1.5px solid;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+}
+
+/* Thông tin */
+.txn-info { flex: 1; min-width: 0; }
+.txn-category { font-weight: 600; font-size: .9rem; color: var(--s900); }
+.txn-meta { display: flex; align-items: center; gap: .75rem; margin-top: .2rem; flex-wrap: wrap; }
+.txn-wallet { font-size: .78rem; color: var(--s400); display: flex; align-items: center; gap: .25rem; }
+.txn-note   { font-size: .78rem; color: var(--s600); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+
+/* Ngày */
+.txn-date { font-size: .8rem; color: var(--s400); white-space: nowrap; flex-shrink: 0; }
+
+/* Số tiền */
+.txn-amount {
+    font-family: var(--font-brand); font-size: 1rem;
+    font-weight: 600; white-space: nowrap; flex-shrink: 0;
+    min-width: 120px; text-align: right;
+}
+.txn-amount.expense { color: #c0392b; }
+.txn-amount.income  { color: var(--mint-d); }
+
+/* Actions */
+.txn-actions { display: flex; gap: .4rem; flex-shrink: 0; }
+.btn-txn-edit, .btn-txn-delete {
+    width: 34px; height: 34px; border-radius: var(--radius-sm);
+    border: 1.5px solid; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .9rem; transition: var(--transition);
+}
+.btn-txn-edit { background: var(--s50); color: var(--navy); border-color: var(--s200); text-decoration: none; }
+.btn-txn-edit:hover { background: var(--s100); border-color: var(--s400); }
+.btn-txn-delete { background: #fff5f5; color: var(--danger); border-color: #fecaca; }
+.btn-txn-delete:hover { background: #fee2e2; }
+
+/* ── Phân trang ─────────────────────────────────────────────── */
+.pagination { display: flex; align-items: center; justify-content: center; gap: .4rem; margin-top: 1.25rem; }
+.page-btn {
+    width: 36px; height: 36px; border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .85rem; font-weight: 500; text-decoration: none;
+    background: #fff; color: var(--s900); border: 1.5px solid var(--s200);
+    transition: var(--transition);
+}
+.page-btn:hover  { border-color: var(--navy); color: var(--navy); }
+.page-btn.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+.page-btn.disabled { opacity: .4; pointer-events: none; }
+
+/* ── Modal ──────────────────────────────────────────────────── */
+.modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(15,20,40,.55); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; opacity: 0; visibility: hidden; transition: all .2s;
+}
+.modal-backdrop.open { opacity: 1; visibility: visible; }
+.modal-box {
+    background: #fff; border-radius: var(--radius-lg);
+    padding: 2rem; width: 100%; max-width: 400px;
+    text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    transform: scale(.95); transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+}
+.modal-backdrop.open .modal-box { transform: scale(1); }
+.modal-title { font-family: var(--font-brand); font-size: 1.35rem; color: var(--navy); margin-bottom: .6rem; }
+.modal-desc  { font-size: .875rem; color: var(--s600); line-height: 1.6; margin-bottom: 1.5rem; }
+.modal-actions { display: flex; gap: .75rem; }
+.btn-modal-cancel {
+    flex: 1; height: 44px; background: var(--s100); color: var(--s900);
+    border: 1.5px solid var(--s200); border-radius: var(--radius-md);
+    font-family: var(--font-body); font-size: .9rem; font-weight: 500; cursor: pointer; transition: var(--transition);
+}
+.btn-modal-cancel:hover { background: var(--s200); }
+.btn-modal-confirm {
+    flex: 1; height: 44px; background: var(--danger); color: #fff;
+    border: none; border-radius: var(--radius-md);
+    font-family: var(--font-body); font-size: .9rem; font-weight: 600; cursor: pointer; transition: var(--transition);
+    display: flex; align-items: center; justify-content: center; gap: .4rem;
+}
+.btn-modal-confirm:hover { background: #c0392b; }
+
+/* ══════════════════════════════════════════════════════════════
+   FORM PAGE
+   ══════════════════════════════════════════════════════════════ */
+.breadcrumb-wrap {
+    display: flex; align-items: center; gap: .5rem;
+    font-size: .85rem; color: var(--s400); margin-bottom: 1.5rem;
+}
+.breadcrumb-link { color: var(--mint-d); text-decoration: none; display: flex; align-items: center; gap: .35rem; }
+.breadcrumb-link:hover { text-decoration: underline; }
+
+.form-card {
+    background: #fff; border-radius: var(--radius-lg);
+    border: 1px solid var(--s200); padding: 1.75rem;
+    box-shadow: var(--shadow-sm); max-width: 600px;
+}
+.form-card-header {
+    display: flex; align-items: center; gap: 1rem;
+    margin-bottom: 1.75rem; padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--s100);
+}
+.form-card-icon {
+    width: 48px; height: 48px; background: var(--s100);
+    border-radius: var(--radius-md); display: flex; align-items: center;
+    justify-content: center; font-size: 1.3rem; color: var(--navy);
+}
+.form-card-title { font-family: var(--font-brand); font-size: 1.3rem; color: var(--navy); }
+.form-card-sub   { font-size: .85rem; color: var(--s600); margin-top: .15rem; }
+
+.required { color: var(--danger); margin-left: 2px; }
+
+.form-select {
+    -webkit-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239aa3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right .85rem center; background-size: 14px;
+    padding-right: 2.5rem !important;
+}
+
+.form-textarea {
+    height: auto !important; padding-top: .75rem !important;
+    resize: none; font-family: var(--font-body); line-height: 1.5;
+}
+
+/* Type selector (EXPENSE / INCOME) */
+.type-selector { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.type-option input[type=radio] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+}
+
+.type-option {
+    position: relative;
+}
+.type-btn {
+    position: relative;
+    display: flex; align-items: center; justify-content: center; gap: .5rem;
+    height: 48px; border-radius: var(--radius-md);
+    border: 1.5px solid var(--s200); background: var(--s50);
+    font-size: .9rem; font-weight: 500; cursor: pointer; transition: var(--transition);
+    color: var(--s600);
+}
+.type-btn:hover { border-color: var(--s400); }
+.type-option input:checked + .type-btn.expense { border-color: var(--danger); background: #fff5f5; color: var(--danger); }
+.type-option input:checked + .type-btn.income  { border-color: var(--mint); background: var(--mint-l); color: var(--mint-d); }
+
+.form-actions { display: flex; gap: .75rem; padding-top: 1.25rem; border-top: 1px solid var(--s100); margin-top: .5rem; }
+.btn-cancel {
+    flex: 1; height: 48px; background: var(--s100); color: var(--s900);
+    border: 1.5px solid var(--s200); border-radius: var(--radius-md);
+    font-family: var(--font-body); font-size: .9rem; font-weight: 500;
+    display: flex; align-items: center; justify-content: center; gap: .4rem;
+    text-decoration: none; transition: var(--transition);
+}
+.btn-cancel:hover { background: var(--s200); color: var(--s900); }

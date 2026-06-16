@@ -122,12 +122,18 @@ public class WalletController {
                     "Cập nhật ví \"" + dto.getName() + "\" thành công!");
             return "redirect:/wallets";
         } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttrs.addFlashAttribute("errorMsg", "Lỗi: " + e.getMessage());
+            return "redirect:/wallets";
+            /*
             model.addAttribute("errorMsg",   e.getMessage());
             model.addAttribute("icons",      WALLET_ICONS);
             model.addAttribute("currencies", CURRENCIES);
             model.addAttribute("isEdit",     true);
             return "wallets/form";
+            */
         }
+
     }
 
     // ── Xoá ví ───────────────────────────────────────────────────

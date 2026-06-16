@@ -19,9 +19,10 @@ function openDeleteModal(btn) {
 }
 
 function closeDeleteModal(event) {
-    // Nếu click vào backdrop (không phải modal-box) thì đóng
-    if (event && event.target !== document.getElementById('deleteModal')) return;
-
+    // Nếu có event (click), chỉ đóng khi click vào backdrop (ngoài modal-box)
+    if (event && event.type === 'click') {
+        if (event.target !== document.getElementById('deleteModal')) return;
+    }
     document.getElementById('deleteModal').classList.remove('open');
     document.body.style.overflow = '';
 }
