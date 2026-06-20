@@ -1,5 +1,7 @@
 package com.example.modun5.expense.app.repository;
 
+import com.example.modun5.expense.app.dto.CategoryStatDTO;
+import com.example.modun5.expense.app.dto.DailyStatDTO;
 import com.example.modun5.expense.app.model.Transaction;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -7,6 +9,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -150,5 +153,108 @@ public class TransactionRepositoryImpl implements TransactionRepository {
                 "SELECT COUNT(*) FROM transactions WHERE user_id=?",
                 Integer.class, userId);
         return count != null ? count : 0;
+    }
+
+    @Override
+    public BigDecimal sumByUserIdAndTypeAndMonth(Long userId, String type, int month, int year) {
+        String sql = """
+                SELECT COALESCE(SUM(amount), 0)
+                FROM transactions
+                WHERE user_id = ?
+                  AND type = ?
+                  AND MONTH(transaction_date) = ?
+                  AND YEAR(transaction_date)  = ?
+                """;
+        return jdbc.queryForObject(sql, BigDecimal.class, userId, type, month, year);
+    }
+
+    @Override
+    public List<CategoryStatDTO> getStatsByCategory(Long userId,String type, LocalDate from, LocalDate to){
+        String sql = """
+                SELECT
+                    c.id    AS category_id,
+                    c.name  AS category_name,
+                    c.icon  AS category_icon,
+                    c.color AS category_color,
+                    COALESCE(SUM(t.amount), 0) AS total_amount,
+                    COUNT(t.id) AS txn_count
+                FROM categories c
+                LEFT JOIN transactions t
+                    ON t.category_id = c.id
+                    AND t.user_id = ?
+                    AND t.type = ?
+                    AND t.transaction_date BETWEEN ? AND ?
+                WHERE c.user_id IS NULL OR c.user_id = ?
+                GROUP BY c.id, c.name, c.icon, c.color
+                HAVING total_amount > 0
+                ORDER BY total_amount DESC
+                """;
+
+        RowMapper<CategoryStatDTO> mapper = (rs, rowNum) -> new CategoryStatDTO(
+                rs.getLong("category_id"),
+                rs.getString("category_name"),
+                rs.getString("category_icon"),
+                rs.getString("category_color"),
+                rs.getBigDecimal("total_amount"),
+                rs.getLong("txn_count"),
+                null // percentage tính ở Service layer
+        );
+
+        return jdbc.query(sql, mapper,
+                userId, type,
+                java.sql.Date.valueOf(from), java.sql.Date.valueOf(to),
+                userId);
+    }
+
+    @Override
+    public List<DailyStatDTO> getDailyStats(Long userId, LocalDate from, LocalDate to) {
+        String sql = """
+                SELECT
+                    transaction_date AS txn_date,
+                    COALESCE(SUM(CASE WHEN type = 'EXPENSE' THEN amount ELSE 0 END), 0) AS total_expense,
+                    COALESCE(SUM(CASE WHEN type = 'INCOME'  THEN amount ELSE 0 END), 0) AS total_income
+                FROM transactions
+                WHERE user_id = ?
+                  AND transaction_date BETWEEN ? AND ?
+                GROUP BY transaction_date
+                ORDER BY transaction_date ASC
+                """;
+
+        RowMapper<DailyStatDTO> mapper = (rs, rowNum) -> new DailyStatDTO(
+                rs.getDate("txn_date").toLocalDate(),
+                rs.getBigDecimal("total_expense"),
+                rs.getBigDecimal("total_income")
+        );
+
+        List<DailyStatDTO> raw = jdbc.query(sql, mapper,
+                userId, java.sql.Date.valueOf(from), java.sql.Date.valueOf(to));
+
+        // Điền đầy đủ tất cả các ngày trong khoảng (kể cả ngày không có giao dịch)
+        // để biểu đồ không bị "đứt đoạn"
+        Map<LocalDate, DailyStatDTO> byDate = new HashMap<>();
+        for (DailyStatDTO d : raw) byDate.put(d.getDate(), d);
+
+        List<DailyStatDTO> result = new ArrayList<>();
+        LocalDate cursor = from;
+        while (!cursor.isAfter(to)) {
+            result.add(byDate.getOrDefault(cursor,
+                    new DailyStatDTO(cursor, BigDecimal.ZERO, BigDecimal.ZERO)));
+            cursor = cursor.plusDays(1);
+        }
+        return result;
+    }
+
+    @Override
+    public BigDecimal sumByUserIdAndTypeAndDateRange(Long userId, String type,
+                                                     LocalDate from, LocalDate to) {
+        String sql = """
+                SELECT COALESCE(SUM(amount), 0)
+                FROM transactions
+                WHERE user_id = ?
+                  AND type = ?
+                  AND transaction_date BETWEEN ? AND ?
+                """;
+        return jdbc.queryForObject(sql, BigDecimal.class,
+                userId, type, java.sql.Date.valueOf(from), java.sql.Date.valueOf(to));
     }
 }

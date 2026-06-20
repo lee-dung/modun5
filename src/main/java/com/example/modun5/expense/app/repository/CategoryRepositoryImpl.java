@@ -98,4 +98,6 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     public void deleteByIdAndUserId(Long id, Long userId) {
         jdbc.update("DELETE FROM categories WHERE id=? AND user_id=?", id, userId);
     }
+
+
 }

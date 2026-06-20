@@ -121,7 +121,7 @@ public class TransactionController {
 
     // ── GET /transactions/{id}/edit — Form sửa ──────────────────
     @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable Long id, Model model,
+    public String editForm(@PathVariable (name ="id") Long id, Model model,
                            RedirectAttributes redirectAttrs) {
         Long userId = SecurityUtil.getCurrentUserId();
         try {
@@ -151,7 +151,7 @@ public class TransactionController {
 
     // ── POST /transactions/{id}/edit — Xử lý sửa ────────────────
     @PostMapping("/{id}/edit")
-    public String doEdit(@PathVariable Long id,
+    public String doEdit(@PathVariable (name = "id")Long id,
                          @Valid @ModelAttribute("transactionDTO") TransactionDTO dto,
                          BindingResult bindingResult,
                          Model model,
@@ -179,7 +179,7 @@ public class TransactionController {
 
     // ── POST /transactions/{id}/delete — Xoá ────────────────────
     @PostMapping("/{id}/delete")
-    public String doDelete(@PathVariable Long id,
+    public String doDelete(@PathVariable (name = "id")Long id,
                            RedirectAttributes redirectAttrs) {
         try {
             txnService.deleteTransaction(id, SecurityUtil.getCurrentUserId());

@@ -78,7 +78,7 @@ public class WalletController {
 
     // ── Form sửa ví ──────────────────────────────────────────────
     @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable Long id, Model model,
+    public String editForm(@PathVariable(name="id") Long id, Model model,
                            RedirectAttributes redirectAttrs) {
         try {
             Wallet wallet = walletService.getWalletByIdAndUser(id, SecurityUtil.getCurrentUserId());
@@ -105,7 +105,7 @@ public class WalletController {
 
     // ── Xử lý cập nhật ví ────────────────────────────────────────
     @PostMapping("/{id}/edit")
-    public String doEdit(@PathVariable Long id,
+    public String doEdit(@PathVariable (name ="id") Long id,
                          @Valid @ModelAttribute("walletDTO") WalletDTO dto,
                          BindingResult bindingResult,
                          Model model,
@@ -138,7 +138,7 @@ public class WalletController {
 
     // ── Xoá ví ───────────────────────────────────────────────────
     @PostMapping("/{id}/delete")
-    public String doDelete(@PathVariable Long id, RedirectAttributes redirectAttrs) {
+    public String doDelete(@PathVariable (name = "id") Long id, RedirectAttributes redirectAttrs) {
         try {
             walletService.deleteWallet(id, SecurityUtil.getCurrentUserId());
             redirectAttrs.addFlashAttribute("successMsg", "Đã xoá ví thành công");

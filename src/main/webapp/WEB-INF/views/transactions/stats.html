@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thống kê — Expense App</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/static/css/main.css}">
+    <link rel="stylesheet" th:href="@{/static/css/stats.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app-layout">
+
+    <aside class="app-sidebar">
+        <a th:href="@{/dashboard}" class="sidebar-logo">
+            <span class="sidebar-logo-icon">💰</span>
+            Expense App
+        </a>
+
+        <span class="sidebar-label">Tổng quan</span>
+        <ul class="sidebar-nav">
+            <li><a th:href="@{/dashboard}"><i class="bi bi-grid-1x2"></i> Dashboard</a></li>
+        </ul>
+
+        <span class="sidebar-label">Giao dịch</span>
+        <ul class="sidebar-nav">
+            <li><a th:href="@{/transactions}"><i class="bi bi-arrow-left-right"></i> Chi tiêu</a></li>
+            <li><a th:href="@{/transactions/stats}" class="active"><i class="bi bi-bar-chart-line"></i> Thống kê</a></li>
+        </ul>
+
+        <span class="sidebar-label">Quản lý</span>
+        <ul class="sidebar-nav">
+            <li><a th:href="@{/wallets}"><i class="bi bi-wallet2"></i> Ví tiền</a></li>
+            <li><a th:href="@{/categories}"><i class="bi bi-tag"></i> Danh mục</a></li>
+        </ul>
+
+        <div class="sidebar-bottom">
+            <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:1rem;margin-top:1rem;">
+                <div style="display:flex;align-items:center;gap:.7rem;padding:.5rem .75rem;margin-bottom:.5rem;">
+                    <div style="width:34px;height:34px;border-radius:50%;background:rgba(0,200,150,.2);border:1.5px solid rgba(0,200,150,.4);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:600;color:#00C896;">
+                        <span sec:authentication="name"
+                              th:text="${#strings.toUpperCase(#strings.substring(#authentication.name,0,1))}">U</span>
+                    </div>
+                    <div style="flex:1;overflow:hidden;">
+                        <div style="font-size:.875rem;font-weight:600;color:#fff;" sec:authentication="name">username</div>
+                        <div style="font-size:.75rem;color:rgba(255,255,255,.45);">Tài khoản</div>
+                    </div>
+                </div>
+                <ul class="sidebar-nav">
+                    <li>
+                        <form th:action="@{/logout}" method="post" style="margin:0;">
+                            <button type="submit" style="all:unset;width:100%;cursor:pointer;">
+                                <span style="display:flex;align-items:center;gap:.7rem;padding:.6rem .75rem;border-radius:6px;font-size:.875rem;color:rgba(231,76,60,.8);">
+                                    <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                                </span>
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </aside>
+
+    <main class="app-main">
+
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Thống kê chi tiêu</h1>
+                <p class="page-subtitle">Phân tích thu chi theo danh mục và thời gian</p>
+            </div>
+        </div>
+
+        <!-- ── Filter bar ──────────────────────────────────────── -->
+        <form method="get" th:action="@{/transactions/stats}" class="stats-filter-bar">
+
+            <div class="stats-type-toggle">
+                <button type="button" onclick="setStatsType('EXPENSE')"
+                        class="stats-type-btn expense"
+                        th:classappend="${filterType == 'EXPENSE'} ? 'active'">
+                    Chi tiêu
+                </button>
+                <button type="button" onclick="setStatsType('INCOME')"
+                        class="stats-type-btn income"
+                        th:classappend="${filterType == 'INCOME'} ? 'active'">
+                    Thu nhập
+                </button>
+            </div>
+
+            <input type="hidden" name="type" id="typeInput" th:value="${filterType}">
+
+            <div style="display:flex;align-items:center;gap:.5rem;margin-left:auto;flex-wrap:wrap;">
+                <input type="date" name="from" class="form-control no-icon"
+                       style="height:40px;width:155px;"
+                       th:value="${filterFrom}">
+                <span style="color:var(--slate-400);font-size:.85rem;">đến</span>
+                <input type="date" name="to" class="form-control no-icon"
+                       style="height:40px;width:155px;"
+                       th:value="${filterTo}">
+                <button type="submit"
+                        style="height:40px;padding:0 1.1rem;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:600;display:flex;align-items:center;gap:.4rem;cursor:pointer;">
+                    <i class="bi bi-funnel"></i> Lọc
+                </button>
+            </div>
+        </form>
+
+        <!-- ── Tổng cộng ────────────────────────────────────────── -->
+        <div class="stats-total-card">
+            <div class="stats-total-label"
+                 th:text="${filterType == 'EXPENSE'} ? 'Tổng chi tiêu trong khoảng đã chọn' : 'Tổng thu nhập trong khoảng đã chọn'">
+                Tổng
+            </div>
+            <div class="stats-total-amount"
+                 th:text="${#numbers.formatDecimal(totalAmount,0,'COMMA',0,'POINT') + ' ₫'}">0 ₫</div>
+            <div class="stats-total-period"
+                 th:text="${#temporals.format(filterFrom,'dd/MM/yyyy')} + ' — ' + ${#temporals.format(filterTo,'dd/MM/yyyy')}">
+                --
+            </div>
+        </div>
+
+        <!-- ── Charts ──────────────────────────────────────────── -->
+        <div class="charts-grid">
+
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <div>
+                        <div class="chart-card-title">Diễn biến theo ngày</div>
+                        <div class="chart-card-sub">Thu / chi trong khoảng đã chọn</div>
+                    </div>
+                </div>
+                <div th:if="${dailyStats != null and !dailyStats.isEmpty()}" style="height:240px;">
+                    <canvas id="dailyStatsChart"></canvas>
+                </div>
+                <div th:unless="${dailyStats != null and !dailyStats.isEmpty()}" class="chart-empty">
+                    <i class="bi bi-bar-chart"></i>
+                    <p>Không có dữ liệu trong khoảng thời gian này</p>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <div>
+                        <div class="chart-card-title">Phân bổ theo danh mục</div>
+                        <div class="chart-card-sub"
+                             th:text="${filterType == 'EXPENSE'} ? 'Tỉ trọng chi tiêu' : 'Tỉ trọng thu nhập'">Tỉ trọng</div>
+                    </div>
+                </div>
+
+                <div th:if="${categoryStats != null and !categoryStats.isEmpty()}"
+                     style="display:flex;align-items:center;gap:1.25rem;">
+                    <div style="width:140px;height:140px;flex-shrink:0;">
+                        <canvas id="categoryStatsChart"></canvas>
+                    </div>
+                    <div class="top-cat-list" style="flex:1;min-width:0;">
+                        <div th:each="cat,iter : ${categoryStats}" th:if="${iter.index lt 4}" class="top-cat-item">
+                            <span style="width:10px;height:10px;border-radius:50%;flex-shrink:0;"
+                                  th:style="'background:' + (${cat.categoryColor} ?: '#6c757d')"></span>
+                            <div class="top-cat-info">
+                                <div class="top-cat-name" th:text="${cat.categoryName}" style="font-size:.8rem;"></div>
+                            </div>
+                            <div class="top-cat-amount" style="font-size:.78rem;"
+                                 th:text="${#numbers.formatDecimal(cat.totalAmount,0,'COMMA',0,'POINT') + ' ₫'}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:unless="${categoryStats != null and !categoryStats.isEmpty()}" class="chart-empty">
+                    <i class="bi bi-pie-chart"></i>
+                    <p>Không có dữ liệu trong khoảng thời gian này</p>
+                </div>
+            </div>
+
+        </div><!-- /charts-grid -->
+
+        <!-- ── Bảng chi tiết theo danh mục ─────────────────────── -->
+        <div class="chart-card" th:if="${categoryStats != null and !categoryStats.isEmpty()}">
+            <div class="chart-card-header">
+                <div>
+                    <div class="chart-card-title">Chi tiết theo danh mục</div>
+                    <div class="chart-card-sub">Toàn bộ danh mục trong khoảng đã chọn</div>
+                </div>
+            </div>
+
+            <table class="cat-breakdown-table">
+                <thead>
+                <tr>
+                    <th>Danh mục</th>
+                    <th class="text-right">Số giao dịch</th>
+                    <th class="text-right">Tổng tiền</th>
+                    <th class="text-right">Tỉ lệ</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="cat : ${categoryStats}">
+                    <td>
+                        <div class="cb-cat-cell">
+                            <div class="cb-icon"
+                                 th:style="'background:' + (${cat.categoryColor} ?: '#6c757d') + '20;border-color:' + (${cat.categoryColor} ?: '#6c757d') + '40;color:' + (${cat.categoryColor} ?: '#6c757d')">
+                                <i class="bi" th:classappend="'bi-' + (${cat.categoryIcon} ?: 'tag')"></i>
+                            </div>
+                            <div>
+                                <div class="cb-name" th:text="${cat.categoryName}">Danh mục</div>
+                                <div class="cb-count" th:text="${cat.transactionCount} + ' giao dịch'">0 giao dịch</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-right" th:text="${cat.transactionCount}">0</td>
+                    <td class="cb-amount" th:text="${#numbers.formatDecimal(cat.totalAmount,0,'COMMA',0,'POINT') + ' ₫'}">0 ₫</td>
+                    <td class="cb-percent">
+                        <span th:if="${cat.percentage != null}"
+                              th:text="${#numbers.formatDecimal(cat.percentage,1,1) + '%'}">0%</span>
+                        <span th:unless="${cat.percentage != null}">—</span>
+                        <div class="cb-bar-track">
+                            <div class="cb-bar-fill"
+                                 th:style="'width:' + (${cat.percentage} ?: 0) + '%;background:' + (${cat.categoryColor} ?: '#6c757d')"></div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+</div>
+
+<script th:src="@{/static/js/app.js}"></script>
+
+<script>
+    function setStatsType(type) {
+        document.getElementById('typeInput').value = type;
+        document.getElementById('typeInput').closest('form').submit();
+    }
+</script>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const dailyLabels  = /*[[${dailyStats != null ? dailyStats.![#temporals.format(date, 'dd/MM')] : null}]]*/ [];
+    const dailyExpense = /*[[${dailyStats != null ? dailyStats.![totalExpense] : null}]]*/ [];
+    const dailyIncome  = /*[[${dailyStats != null ? dailyStats.![totalIncome] : null}]]*/ [];
+
+    const categoryLabels = /*[[${categoryStats != null ? categoryStats.![categoryName] : null}]]*/ [];
+    const categoryValues = /*[[${categoryStats != null ? categoryStats.![totalAmount] : null}]]*/ [];
+    const categoryColors = /*[[${categoryStats != null ? categoryStats.![categoryColor] : null}]]*/ [];
+    /*]]>*/
+
+    if (dailyLabels && dailyLabels.length > 0) {
+        const ctx = document.getElementById('dailyStatsChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dailyLabels,
+                    datasets: [
+                        { label: 'Chi tiêu', data: dailyExpense, backgroundColor: '#e74c3c', borderRadius: 6, maxBarThickness: 24 },
+                        { label: 'Thu nhập', data: dailyIncome, backgroundColor: '#00C896', borderRadius: 6, maxBarThickness: 24 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { font: { family: 'DM Sans', size: 11 }, boxWidth: 12, padding: 16 } },
+                        tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + Number(ctx.raw).toLocaleString('vi-VN') + ' ₫' } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { callback: v => (v / 1000) + 'k', font: { family: 'DM Sans', size: 10 } }, grid: { color: '#f1f3f8' } },
+                        x: { ticks: { font: { family: 'DM Sans', size: 10 } }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+    }
+
+    if (categoryLabels && categoryLabels.length > 0) {
+        const ctx2 = document.getElementById('categoryStatsChart');
+        if (ctx2) {
+            const fallbackColors = ['#00C896', '#1B2B4B', '#f39c12', '#e74c3c', '#9aa3b8', '#3498db'];
+            const colors = categoryColors.map((c, i) => c || fallbackColors[i % fallbackColors.length]);
+
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: categoryLabels,
+                    datasets: [{ data: categoryValues, backgroundColor: colors, borderWidth: 2, borderColor: '#ffffff' }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '68%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: ctx => ctx.label + ': ' + Number(ctx.raw).toLocaleString('vi-VN') + ' ₫' } }
+                    }
+                }
+            });
+        }
+    }
+</script>
+</body>
+</html>
